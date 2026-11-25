@@ -1,25 +1,13 @@
+import { Link } from "react-router-dom";
 import "../styles/home.css";
-import { useNavigate } from "react-router-dom";
 
-function Login() {
-  const navigate = useNavigate();
-
-  const handleLogin = () => {
-    // Later you will connect backend API here
-    navigate("/dashboard");
-  };
-
+export default function Home() {
   return (
-    <div className="login-container">
-      <h2>Login</h2>
-      <input type="email" placeholder="Email" />
-      <input type="password" placeholder="Password" />
-      <button onClick={handleLogin}>Login</button>
-
-      <h1>Welcome to home page </h1>
-
-    </div>
+    <main className="login-container">
+      <h1>GATE preparation</h1>
+      <p>Choose a practice bank, build your own questions, or revisit a worked solution.</p>
+      <a href="https://gate-cs-study-desk.gallantmyrrh5.chatgpt.site">Open GATE Study Desk</a>
+      <Link to="/dashboard">Open the original dashboard</Link>
+    </main>
   );
 }
-
-export default Login;
