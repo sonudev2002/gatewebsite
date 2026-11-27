@@ -1,0 +1,31 @@
+/* Shared workspace palette and layout */
+:root{--ink:#182d43;--line:#d6dfe5;--accent:#265b86;--tint:#edf4f9;--muted:#4f6374}
+body{background:#f5f7fa;color:var(--ink);font-family:Inter,"Segoe UI",Arial,sans-serif}
+body[data-area=learn]{--accent:#28694f;--tint:#edf6ed}
+body[data-area=practise]{--accent:#265b86;--tint:#edf4fb}
+body[data-area=revise]{--accent:#774c83;--tint:#f6eef8}
+h1,h2{font-family:"Segoe UI",Arial,sans-serif;letter-spacing:-.045em;line-height:1.14;font-weight:680}
+h1{font-size:clamp(32px,4vw,48px)}h2{font-size:clamp(24px,2.5vw,31px)}h3{letter-spacing:-.022em}
+p,small,.muted{color:var(--muted)}aside{background:#14283c;padding:28px 16px;width:226px;overflow-y:auto}
+.brand{font:700 24px/1.1 "Segoe UI",sans-serif;color:white;text-decoration:none;letter-spacing:-1px}
+.brand .logo{font:800 24px/36px "Segoe UI",sans-serif;background:#9ce4ca;color:#133b3e;transform:none;border-radius:10px}
+main{margin-left:226px}#nav{display:grid;gap:22px;margin-top:34px}.nav-group{display:grid;gap:3px}
+.group-label{font:700 11px/1.5 monospace;text-transform:uppercase;letter-spacing:1.4px;color:#acbdce;margin:0 11px 4px}
+#nav a{display:flex;align-items:center;gap:11px;min-height:42px;padding:9px 10px;color:#e2eafa;text-decoration:none;border-radius:7px;font-size:14px;font-weight:520}
+#nav a:hover{background:#223b51}#nav a.on{background:#cee9e2;color:#153e40;font-weight:700}aside .sidefoot{margin-top:auto;color:#fff}
+header{background:#fff;border-color:var(--line)}#section-name{color:var(--accent);font-weight:650}#app{max-width:1440px;padding-top:32px}
+#app:focus{outline:none}.skip-link{position:fixed;top:-80px;left:8px;z-index:50;background:white;color:#143e5b;padding:8px}.skip-link:focus{top:8px}
+.desk-lead{gap:16px}.desk-lead .hero{background:#173950;border-radius:16px;padding:clamp(20px,3.5vw,46px);min-height:248px}
+.hero .label{color:#a2e5c9}.desk-lead h1{font:620 clamp(36px,4.4vw,62px)/1.04 "Segoe UI",sans-serif;letter-spacing:-.055em}
+.desk-lead .copy{max-width:76%}.hero .btn{background:#b1ebcd;color:#123d35}.hero .btn.ghost{background:#224961;color:#fff;border-color:#74909f}
+.hero-art .art{width:29%;opacity:.62;right:-2%}.week-card{background:#fff;border-color:var(--line);border-radius:16px}.week-card h2{font-size:23px}.week-bars i{background:#37826c}
+.metrics,.desk-shortcuts{margin-top:14px}.metric,.card,.panel,.desk-shortcuts>a,.desk-shortcuts>button{border-color:var(--line);border-radius:12px}.metric b{font:700 27px/1.1 "Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+.desk-shortcuts>a,.desk-shortcuts>button{border-top:3px solid #78acbf}.desk-shortcuts>button{border-top-color:#ae92bc}.desk-shortcuts>a:last-child{border-top-color:#88b99c}
+body:not([data-area=overview]) #app>h1:first-child{margin-bottom:18px;padding:10px 0 12px 16px;border-left:5px solid var(--accent)}
+.btn,.reader-arrow{background:var(--accent)}.sub{border-color:#becdd7}.link{color:var(--accent)}.filters{padding:14px;background:var(--tint);border:1px solid var(--line);border-radius:10px}
+.filters label{color:#354b5b;font-weight:600}.filters select,.filters input{font-weight:400}.answer:has(input:checked),.answer.chosen{background:var(--tint);border-color:var(--accent)}
+.panel .actions{row-gap:7px}.section{border-bottom:1px solid var(--line);padding-bottom:10px}.progress .bar i{background:#44816a}
+#timer{color:#244c74;background:#eaf2fa;border-radius:7px;padding:8px 12px}.palette .answered{background:#d7ede5}.rev-grid{gap:16px}.rev-tile{border-radius:9px}
+@media(max-width:1100px) and (min-width:851px){aside{width:202px}main{margin-left:202px}.desk-lead .copy{max-width:100%}.hero-art .art{opacity:.12}}
+@media(max-width:850px){aside{position:relative;width:100%;padding:12px 16px;overflow:visible}main{margin:0}#nav{display:none;margin:0}body.menu-open #nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 4px;align-items:start}.nav-group:first-child{align-self:center}.group-label{margin-top:4px}#nav a{white-space:normal}.brand .logo{line-height:30px;font-size:21px}.breadcrumb{display:none}aside .sidefoot{margin:0}.menu-toggle{font-weight:650}#app{padding-top:19px}.desk-lead .copy{max-width:100%}.hero-art .art{opacity:.1}}
+@media(max-width:560px){.desk-lead .hero{min-height:0}.hero-art{display:none}.desk-lead{gap:10px}.metric{padding:11px}.filters{padding:10px}.section{gap:8px}.section .link{text-align:right}.week-card{padding:16px}.group-label{letter-spacing:.8px}.desk-shortcuts>a,.desk-shortcuts>button{border-top-width:1px;border-left-width:4px}.examtext,.scrolltable{max-width:100%}}

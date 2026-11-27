@@ -24,5 +24,27 @@ function submitAnswer(id){if(chosen===null||submitted)return;let q=questions[id]
 function nextQuestion(id){let q=questions[id],pool=origin==='rev'?queue().filter(x=>x.id!==id):questions.filter(x=>origin==='practice'?(!subject||subject===topics[x.t][1])&&(!filters.topic||x.t===+filters.topic)&&(!filters.level||x.l===+filters.level)&&(!filters.status||status(x)===filters.status):x.t===q.t);let next=pool.find(x=>x.id>id)||pool.find(x=>x.id!==id);go(next?'question/'+next.id:origin)}
 function oldRevision(){let qs=queue();return '<h1>Revision dashboard</h1>'+metrics()+'<div class="section"><h2>Incorrect questions</h2></div>'+(qs.length?qlist(qs):'<div class="panel"><p>Your queue is clear. Missed questions appear here until you solve them correctly.</p></div>')+'<div class="section"><h2>Saved weak topics</h2></div>'+(state.weak.length?cards(state.weak):'<div class="panel"><p>Open a topic and choose “Save as weak topic” to revisit its notes here.</p></div>')+'<div class="section"><h2>Topic progress</h2></div>'+cards()}
 function originalMistakes(){let errors=state.attempts.map((a,i)=>({...a,i})).filter(a=>!a.ok),freq={};for(let a of errors){let tag=questions[a.id].tag;freq[tag]=(freq[tag]||0)+1}return '<h1>Mistake log</h1><div class="section"><h2>Repeated mistakes</h2></div><div class="panel">'+(Object.entries(freq).filter(e=>e[1]>1).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<div class="spread"><b>'+k+'</b><span>'+v+' misses</span></div>').join('')||'<p>When a mistake pattern occurs twice, its count appears here.</p>')+'</div><div class="section"><h2>Attempt history</h2></div>'+(errors.length?errors.reverse().map(a=>{let q=questions[a.id];return '<section class="panel"><small>'+new Date(a.time).toLocaleDateString()+' · '+q.tag+'</small><h3>'+esc(q.p)+'</h3><p>Your answer: '+esc(q.options[a.choice])+' · Correct: '+esc(q.options[q.k])+'</p><label>Mistake note<textarea class="note" oninput="state.attempts['+a.i+'].note=this.value;save()">'+esc(a.note)+'</textarea></label>'+btn('Retry question','openQ('+a.id+')')+'</section>'}).join(''):'<div class="panel"><p>Your first incorrect answer will start your mistake log.</p></div>')}
-function render(){let [v='desk',n]=route();v=v||'desk';let active=v==='topic'?'library':(v==='question'||v==='pyq')?'practice':v;document.querySelector('#nav').innerHTML=Object.entries(names).map(([key,s],i)=>btn(icon(navicons[i])+s,"go('"+key+"')",key===active?'on':'')).join('');document.querySelector('#crumb').textContent=names[active]||'Overview';app.innerHTML=v==='topic'&&topics[n]?lesson(+n):v==='question'&&questions[n]?question(questions[n]):v==='library'?'<h1>Topic library</h1><p class="intro">Choose a topic for definitions, solving methods, and practice.</p>'+cards():v==='pyq'&&pyqMap.has(n)?pyqQuestion(pyqMap.get(n)):v==='practice'?practice():v==='rev'?revision():v==='log'?mistakes():overview()}
+const navigationGroups = [
+  {label:'', items:[['desk','desk']]},
+  {label:'Learn', items:[['library','book']]},
+  {label:'Practise', items:[['practice','practice'],['mock','target'],['studio','layers']]},
+  {label:'Revise', items:[['rev','rev'],['log','log']]}
+];
+function renderNavigation(view) {
+  const parent = {topic:'library',question:'practice',pyq:'practice',exam:'mock',own:'studio'};
+  const active = parent[view] || view;
+  const group = navigationGroups.find(g=>g.items.some(([key])=>key===active));
+  document.body.dataset.area = group?.label.toLowerCase() || 'overview';
+  document.body.dataset.page = view;
+  document.querySelector('#section-name').textContent = group?.label || 'Workspace';
+  document.querySelector('#nav').innerHTML = navigationGroups.map(({label,items})=>{
+    const links = items.filter(([key])=>names[key]).map(([key,glyph])=>{
+      const selected = key === active;
+      return '<a href="#'+key+'"'+(selected?' class="on" aria-current="page"':'')+'>'+icon(glyph)+names[key]+'</a>';
+    }).join('');
+    return '<div class="nav-group">'+(label?'<span class="group-label">'+label+'</span>':'')+links+'</div>';
+  }).join('');
+  document.querySelector('#crumb').textContent=names[active] || 'Overview';
+}
+function render(){let [v='desk',n]=route();v=v||'desk';renderNavigation(v);app.innerHTML=v==='topic'&&topics[n]?lesson(+n):v==='question'&&questions[n]?question(questions[n]):v==='library'?'<h1>Topic library</h1><p class="intro">Choose a topic for definitions, solving methods, and practice.</p>'+cards():v==='pyq'&&pyqMap.has(n)?pyqQuestion(pyqMap.get(n)):v==='practice'?practice():v==='rev'?revision():v==='log'?mistakes():overview()}
 onhashchange=()=>{chosen=null;submitted=null;solution=false;pyqDraft='';pyqShow=false;render();scrollTo(0,0)};
