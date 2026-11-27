@@ -62,7 +62,7 @@ function weeklyPractice() {
   const total = days.reduce((sum,d) => sum+d.count,0);
   return '<section class="week-card"><h2>Practice this week</h2><p><b>'+total+'</b> practice attempt'+(total===1?'':'s')+' in 7 days</p><div class="week-bars">'+days.map(d=>{
     const date = d.day.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
-    return '<div aria-label="'+esc(date)+', '+d.count+' attempts" title="'+esc(date)+': '+d.count+'"><b>'+d.count+'</b><i style="height:'+Math.max(3,Math.round(48*d.count/max))+'px"></i><small>'+esc(d.day.toLocaleDateString(undefined,{weekday:'short'}))+'</small></div>';
+    return '<div aria-label="'+esc(date)+', '+d.count+' attempts" title="'+esc(date)+': '+d.count+'"><b>'+d.count+'</b><i style="height:'+Math.round(58*d.count/max)+'px"></i><small>'+esc(d.day.toLocaleDateString(undefined,{weekday:'short'}))+'</small></div>';
   }).join('')+'</div></section>';
 }
 function deskRevision() {
