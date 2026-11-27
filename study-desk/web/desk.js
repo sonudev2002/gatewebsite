@@ -16,7 +16,7 @@ function openDeskSearch() {
 }
 document.addEventListener('keydown', event => {
   if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey &&
-      !finder.open && !event.target.closest('input,textarea,select,[contenteditable=true]')) {
+      !finder.open && !pointReader.open && !event.target.closest('input,textarea,select,[contenteditable=true]')) {
     event.preventDefault();
     openDeskSearch();
   }

@@ -30,8 +30,68 @@ function cardForm(s,t,id=''){return '<form class="panel" data-sub="'+esc(s)+'" d
 function addCard(e){e.preventDefault();let f=e.target,d=new FormData(f),b=d.get('body').trim(),s=d.get('sub').trim(),t=d.get('topic').trim();if(!b||!s||!t)return;(state.cards??=[]).unshift({id:crypto.randomUUID(),s,t,b,cat:d.get('cat'),q:f.dataset.q});save();if(route()[0]==='rev'){revSubject='';revTopic='';revType='All';render()}else{f.elements.body.value='';f.querySelector('[role=status]').textContent=' Note saved.'}}
 const baseFormulas=['f ∈ Θ(g) iff f ∈ O(g) and f ∈ Ω(g).','For a connected single-entry, single-exit CFG: V(G) = E − N + 2.','OUT[B] = ⋃ IN[S] over successors S. IN[B] = USE[B] ∪ (OUT[B] − DEF[B]).','Turnaround = finish − arrival. For one CPU burst, waiting = turnaround − burst.','For CFL L and regular R, L ∩ R is context-free.','Distance via v = link cost to v + the distance v advertises. Minimize across neighbors.'];
 function pyProgress(){const totals=new Map(),results=new Map();for(const q of archive)totals.set(q.t,(totals.get(q.t)||0)+1);for(const a of pyqTries())results.set(a.id,a);const groups=new Map();for(const a of results.values()){const q=pyqMap.get(a.id);if(!q)continue;const g=groups.get(q.t)||{tried:0,correct:0};g.tried++;if(a.ok===true)g.correct++;groups.set(q.t,g)}return '<div class="section"><h2>PYQ topic progress</h2></div>'+([...groups].map(([t,g])=>'<div class="item"><div><b>'+esc(t)+'</b><p>'+g.tried+' of '+totals.get(t)+' tried · '+g.correct+' correct on latest attempt</p></div></div>').join('')||'<p>Answer a previous-year question to start tracking its topic.</p>')}
-function revision(){let records=topics.flatMap((t,i)=>[{cat:'Concept',s:t[1],t:t[0],b:t[5],q:'topic/'+i},{cat:i===4?'Concept':'Formula',s:t[1],t:t[0],b:baseFormulas[i],q:'topic/'+i}]);for(let q of queue())records.push({cat:'Mistake',s:topics[q.t][1],t:topics[q.t][0],b:(latest(q.id).note||q.tag)+' · '+q.p,q:'question/'+q.id});for(let a of pendingPYQ()){let q=pyqMap.get(a.id);if(q)records.push({cat:'Mistake',s:q.s,t:q.t,b:ref(q)+' · '+plain(q.p).slice(0,160),q:'pyq/'+q.id})}records.unshift(...personalCards().map(c=>({...c,q:c.q.startsWith('GATE-')?'pyq/'+c.q:c.q})));let subs=unique(records.map(r=>r.s)),ts=unique(records.filter(r=>!revSubject||r.s===revSubject).map(r=>r.t)),shown=records.filter(r=>(revType==='All'||r.cat===revType)&&(!revSubject||revSubject===r.s)&&(!revTopic||revTopic===r.t));
-return '<h1>Revision dashboard</h1>'+metrics()+'<div class="section"><h2>Revision notebook</h2></div><div class="actions">'+['All',...types].map(k=>btn(k==='All'?'All entries':k==="Formula"?"Formulas":k+'s',"revType=\'"+k+"\';render()",revType===k?'btn':'sub')).join('')+'</div><div class="filters">'+selector2('Subject','All subjects',subs,revSubject,'revSubject=this.value;revTopic=\'\';render()')+selector2('Topic','All topics',ts,revTopic,'revTopic=this.value;render()')+'</div><div class="list">'+shown.map(r=>'<div class="item"><div><small>'+esc(r.s)+' · '+esc(r.t)+'</small><p>'+esc(r.b)+'</p><span class="tag">'+r.cat+'</span> '+(r.q?btn('Open',r.q.startsWith('question/')?'openQ('+Number(r.q.split('/')[1])+')':"go(\'"+r.q+"\')",'link'):'')+(r.id?noteTools(r)+' <label>Change category <select onchange="personalCards().find(c=>c.id===\''+r.id+'\').cat=this.value;save();render()">'+catSelect(r.cat)+'</select></label>':'')+'</div></div>').join('')+'</div>'+(shown.length?'':'<p>No matching entries yet.</p>')+cardForm(revSubject,revTopic)+pyProgress()+'<div class="section"><h2>Saved weak topics</h2></div>'+(state.weak.length?cards(state.weak):'<p>Save a weak topic from its lesson.</p>')+'<div class="section"><h2>ChatGPT topic progress</h2></div>'+cards()}
+let notebookPoints = [], readingPoints = [], readingIndex = 0;
+function revisionTile(point, index, quick = false) {
+  const category = types.indexOf(point.cat);
+  return '<button class="rev-tile tone-'+category+'" onclick="openPoint('+index+','+quick+')"><span class="rev-tag">'+esc(point.cat)+'</span><strong>'+esc(point.t)+'</strong><span class="rev-preview">'+esc(point.b || 'Image note')+'</span><small>'+esc(point.s)+'</small></button>';
+}
+function openPoint(index, quick) {
+  if (quick) {
+    const [view,id] = route();
+    const q = view === 'pyq' ? pyqMap.get(id) : questions[id];
+    const key = view === 'pyq' ? id : 'question/'+id;
+    readingPoints = points(q).map(([cat,b],i)=>({...topicMeta(q),cat,b,quickKey:key,pointIndex:i}));
+  } else readingPoints = notebookPoints.slice();
+  if (!readingPoints[index]) return;
+  readingIndex = index;
+  const dialog = document.getElementById('point-reader');
+  updatePointReader();
+  dialog.showModal();
+  dialog.querySelector('[data-close]').focus();
+}
+function changePoint(step) {
+  const next = readingIndex + step;
+  if (next < 0 || next >= readingPoints.length) return;
+  readingIndex = next;
+  updatePointReader();
+}
+function updatePointReader() {
+  const dialog = document.getElementById('point-reader'), point = readingPoints[readingIndex];
+  dialog.querySelector('[data-count]').textContent = (readingIndex+1)+' of '+readingPoints.length;
+  dialog.querySelector('[data-prev]').disabled = readingIndex === 0;
+  dialog.querySelector('[data-next]').disabled = readingIndex === readingPoints.length-1;
+  const body = dialog.querySelector('article');
+  body.className = 'tone-'+types.indexOf(point.cat);
+  body.innerHTML = '<span class="rev-tag">'+esc(point.cat)+'</span><h2 id="reader-topic">'+esc(point.t)+'</h2><small>'+esc(point.s)+'</small><p>'+esc(point.b||'')+'</p>';
+  for (const id of point.images || []) {
+    const img = document.createElement('img');
+    img.src = '/api/image/'+encodeURIComponent(id);
+    img.alt = 'Saved revision attachment'; body.append(img);
+  }
+  body.scrollTop = 0;
+  const actions = dialog.querySelector('[data-tools]');
+  actions.replaceChildren();
+  function action(label, callback) {
+    const button = document.createElement('button');
+    button.className = 'sub'; button.textContent = label;
+    button.onclick = () => callback(button); actions.append(button); return button;
+  }
+  if (point.quickKey) {
+    const saved = personalCards().some(c => c.q===point.quickKey && c.b===point.b);
+    action(saved?'Saved':'Save point', button=>saveQuick(point.quickKey,point.pointIndex,button)).disabled=saved;
+  }
+  if (point.q) action('Open source',()=>{dialog.close();if(point.q.startsWith('question/'))openQ(Number(point.q.slice(9)));else go(point.q)});
+  if (point.id) action('Edit note',()=>{dialog.close();editRevision(point.id)});
+}
+const pointReader = document.getElementById('point-reader');
+pointReader.addEventListener('keydown', event=>{
+  if (event.key==='ArrowLeft'||event.key==='ArrowRight') {event.preventDefault();changePoint(event.key==='ArrowRight'?1:-1)}
+});
+window.addEventListener('hashchange',()=>{if(pointReader.open)pointReader.close()});
+
+function revision(){let records=topics.flatMap((t,i)=>[{cat:'Concept',s:t[1],t:t[0],b:t[5],q:'topic/'+i},{cat:i===4?'Concept':'Formula',s:t[1],t:t[0],b:baseFormulas[i],q:'topic/'+i}]);for(let q of queue())records.push({cat:'Mistake',s:topics[q.t][1],t:topics[q.t][0],b:(latest(q.id).note||q.tag)+' · '+q.p,q:'question/'+q.id});for(let a of pendingPYQ()){let q=pyqMap.get(a.id);if(q)records.push({cat:'Mistake',s:q.s,t:q.t,b:ref(q)+' · '+plain(q.p).slice(0,160),q:'pyq/'+q.id})}records.unshift(...personalCards().map(c=>({...c,q:c.q?.startsWith('GATE-')?'pyq/'+c.q:c.q})));let subs=unique(records.map(r=>r.s)),ts=unique(records.filter(r=>!revSubject||r.s===revSubject).map(r=>r.t)),shown=records.filter(r=>(revType==='All'||r.cat===revType)&&(!revSubject||revSubject===r.s)&&(!revTopic||revTopic===r.t));
+notebookPoints=shown;
+return '<h1>Revision dashboard</h1>'+metrics()+'<div class="section"><h2>Revision notebook</h2></div><div class="actions">'+['All',...types].map(k=>btn(k==='All'?'All entries':k==="Formula"?"Formulas":k+'s',"revType=\'"+k+"\';render()",revType===k?'btn':'sub')).join('')+'</div><div class="filters">'+selector2('Subject','All subjects',subs,revSubject,'revSubject=this.value;revTopic=\'\';render()')+selector2('Topic','All topics',ts,revTopic,'revTopic=this.value;render()')+'</div><div class="rev-grid">'+shown.map((r,i)=>revisionTile(r,i)).join('')+'</div>'+(shown.length?'':'<p>No matching entries yet.</p>')+cardForm(revSubject,revTopic)+pyProgress()+'<div class="section"><h2>Saved weak topics</h2></div>'+(state.weak.length?cards(state.weak):'<p>Save a weak topic from its lesson.</p>')+'<div class="section"><h2>ChatGPT topic progress</h2></div>'+cards()}
 function mistakes(){let misses=pyqTries().filter(a=>a.ok===false&&pyqMap.has(a.id)),counts={};for(let a of misses){let q=pyqMap.get(a.id);counts[q.t]=(counts[q.t]||0)+1}return originalMistakes()+'<div class="section"><h2>PYQ mistake history</h2></div>'+Object.entries(counts).filter(([,n])=>n>1).map(([t,n])=>'<p>'+esc(t)+' · '+n+' misses</p>').join('')+(misses.length?'<div class="list">'+misses.slice().reverse().map(a=>pyRow(pyqMap.get(a.id))).join('')+'</div>':'<p>Missed previous-year questions will appear here.</p>')}
 const draw=render;render=function(){draw();let [v,n]=route();if(v==='question'&&questions[n]){let t=topics[questions[n].t];app.insertAdjacentHTML('beforeend',cardForm(t[1],t[0],'question/'+n))}if(v==='pyq'&&!pyqMap.has(n))app.innerHTML='<p>Loading question archive…</p>';if(window.MathJax?.typesetPromise)window.MathJax.typesetPromise([app]).catch(()=>{})};
 render();
